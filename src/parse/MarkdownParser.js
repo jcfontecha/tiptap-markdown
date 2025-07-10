@@ -14,11 +14,21 @@ export class MarkdownParser {
 
     constructor(editor, { html, linkify, breaks }) {
         this.editor = editor;
-        this.md = this.withPatchedRenderer(markdownit({
+        
+        // Create markdown-it instance
+        const md = markdownit({
             html,
             linkify,
             breaks,
-        }));
+        });
+        
+        // Ensure isSpace is available for markdown-it internal use
+        // This fixes compatibility issues with certain bundlers
+        if (!globalThis.isSpace && md.utils && md.utils.isSpace) {
+            globalThis.isSpace = md.utils.isSpace;
+        }
+        
+        this.md = this.withPatchedRenderer(md);
     }
 
     parse(content, { inline } = {}) {
